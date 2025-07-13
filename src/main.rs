@@ -44,6 +44,11 @@ impl Recipe {
         self.out.1 as f32 * self.crafts_per_second()
     }
 
+    #[inline]
+    fn is_raw(&self) -> bool {
+        self.inputs.is_empty()
+    }
+
     // Raw mats per item
     fn get_raw_mats(&self) -> Vec<(Item, f32)> {
         let items: HashMap<_, f32> = self
@@ -51,15 +56,20 @@ impl Recipe {
             .iter()
             .copied()
             .flat_map(|(item, count)| {
-                RECIPES
+                let recipe = RECIPES
                     .iter()
                     .find(|r| r.out.0 == item)
-                    .expect("Recipe not found")
-                    .get_raw_mats()
-                    .into_iter()
-                    // Scale up by how much of the sub-item we need
-                    .map(|(item, sub_count)| (item, sub_count * count as f32))
-                    .collect::<Vec<_>>()
+                    .expect("Recipe not found");
+
+                if recipe.is_raw() {
+                    vec![(item, 1.)]
+                } else {
+                    recipe.get_raw_mats()
+                }
+                .into_iter()
+                // Scale up by how much of the sub-item we need
+                .map(|(item, sub_count)| (item, sub_count * count as f32))
+                .collect::<Vec<_>>()
             })
             .fold(HashMap::new(), |mut acc, (item, count)| {
                 *acc.entry(item).or_default() += count;
@@ -199,7 +209,7 @@ static RECIPES: LazyLock<Vec<Recipe>> = LazyLock::new(|| {
         Recipe {
             out: (Copper, 1),
             inputs: vec![],
-            craft_time: 0.5,
+            craft_time: 2.,
         },
         Recipe {
             out: (CopperPlate, 1),
@@ -209,7 +219,7 @@ static RECIPES: LazyLock<Vec<Recipe>> = LazyLock::new(|| {
         Recipe {
             out: (Iron, 1),
             inputs: vec![],
-            craft_time: 0.5,
+            craft_time: 2.,
         },
         Recipe {
             out: (IronPlate, 1),
@@ -219,7 +229,7 @@ static RECIPES: LazyLock<Vec<Recipe>> = LazyLock::new(|| {
         Recipe {
             out: (Coal, 1),
             inputs: vec![],
-            craft_time: 0.5,
+            craft_time: 2.,
         },
         Recipe {
             out: (Water, 1200),
