@@ -1,33 +1,12 @@
-use std::{collections::HashMap, sync::LazyLock};
+pub mod items;
+pub mod recipes;
 
-#[derive(Debug, PartialEq, Eq, Copy, Clone, Hash)]
-enum Item {
-    // Raw Materials
-    Copper,
-    Iron,
-    Coal,
-    Water,
-    CrudeOil,
+use crate::recipes::RECIPES;
+use std::collections::HashMap;
 
-    IronPlate,
-    CopperPlate,
-    Cog,
-    CopperWire,
-    Inserter,
-    Belt,
-    Plastic,
-    Petroleum,
-    Steel,
-    Pipe,
-    Sulfur,
-    Engine,
-    R1Circuit,
-    R2Circuit,
-    R1Science,
-    R2Science,
-    R3Science,
-}
-struct Recipe {
+use crate::items::Item;
+
+pub struct Recipe {
     out: (Item, usize),
     inputs: Vec<(Item, usize)>,
     craft_time: f32,
@@ -127,122 +106,6 @@ impl Recipe {
         std::iter::once((self.out.0, 1.)).chain(items).collect()
     }
 }
-
-static RECIPES: LazyLock<Vec<Recipe>> = LazyLock::new(|| {
-    use Item::*;
-    vec![
-        Recipe {
-            out: (Cog, 1),
-            inputs: vec![(IronPlate, 2)],
-            craft_time: 0.5,
-        },
-        Recipe {
-            out: (CopperWire, 2),
-            inputs: vec![(CopperPlate, 1)],
-            craft_time: 0.5,
-        },
-        Recipe {
-            out: (R1Circuit, 1),
-            inputs: vec![(CopperWire, 3), (IronPlate, 1)],
-            craft_time: 0.5,
-        },
-        Recipe {
-            out: (Inserter, 1),
-            inputs: vec![(R1Circuit, 1), (IronPlate, 1), (Cog, 1)],
-            craft_time: 0.5,
-        },
-        Recipe {
-            out: (Belt, 2),
-            inputs: vec![(IronPlate, 1), (Cog, 1)],
-            craft_time: 0.5,
-        },
-        Recipe {
-            out: (R2Science, 1),
-            inputs: vec![(Inserter, 1), (Belt, 1)],
-            craft_time: 6.,
-        },
-        Recipe {
-            out: (R1Science, 1),
-            inputs: vec![(CopperPlate, 1), (Cog, 1)],
-            craft_time: 5.,
-        },
-        Recipe {
-            out: (Plastic, 2),
-            inputs: vec![(Coal, 1), (Petroleum, 20)],
-            craft_time: 1.,
-        },
-        Recipe {
-            out: (Petroleum, 45),
-            inputs: vec![(CrudeOil, 100)],
-            craft_time: 5.,
-        },
-        Recipe {
-            out: (R2Circuit, 1),
-            inputs: vec![(Plastic, 2), (CopperWire, 4), (R1Circuit, 2)],
-            craft_time: 5.,
-        },
-        Recipe {
-            out: (Sulfur, 2),
-            inputs: vec![(Water, 30), (Petroleum, 30)],
-            craft_time: 1.,
-        },
-        Recipe {
-            out: (Pipe, 1),
-            inputs: vec![(IronPlate, 1)],
-            craft_time: 0.5,
-        },
-        Recipe {
-            out: (Steel, 1),
-            inputs: vec![(IronPlate, 5)],
-            craft_time: 16.,
-        },
-        Recipe {
-            out: (Engine, 1),
-            inputs: vec![(Steel, 1), (Cog, 1), (Pipe, 2)],
-            craft_time: 10.,
-        },
-        Recipe {
-            out: (R3Science, 1),
-            inputs: vec![(Sulfur, 1), (R2Circuit, 3), (Engine, 2)],
-            craft_time: 24.,
-        },
-        Recipe {
-            out: (Copper, 1),
-            inputs: vec![],
-            craft_time: 2.,
-        },
-        Recipe {
-            out: (CopperPlate, 1),
-            inputs: vec![(Copper, 1)],
-            craft_time: 3.2,
-        },
-        Recipe {
-            out: (Iron, 1),
-            inputs: vec![],
-            craft_time: 2.,
-        },
-        Recipe {
-            out: (IronPlate, 1),
-            inputs: vec![(Iron, 1)],
-            craft_time: 3.2,
-        },
-        Recipe {
-            out: (Coal, 1),
-            inputs: vec![],
-            craft_time: 2.,
-        },
-        Recipe {
-            out: (Water, 1200),
-            inputs: vec![],
-            craft_time: 1.,
-        },
-        Recipe {
-            out: (CrudeOil, 1),
-            inputs: vec![],
-            craft_time: 1.,
-        },
-    ]
-});
 
 fn main() {
     RECIPES.iter().for_each(|r| {
