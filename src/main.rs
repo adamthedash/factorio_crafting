@@ -78,33 +78,32 @@ impl Recipe {
 
     /// Get combined crafting recipes to make this item
     /// Returned value is how many crafts of the sub-components per one of these to keep up
-    fn get_requirements_tree(&self) -> Vec<(Item, f32)> {
+    fn get_required_crafters(&self) -> Vec<(Item, f32)> {
         // Get the hierarchical tree first
-        let pretty_tree = self.get_requirements_tree_pretty();
-        
-        // Flatten the tree into a HashMap, aggregating duplicate items
-        let mut items = HashMap::new();
-        
+        let pretty_tree = self.get_requirements_tree();
+
         // Recursive function to traverse the tree and collect all requirements
         fn collect_requirements(node: &RequirementNode, acc: &mut HashMap<Item, f32>) {
             // Add this node's requirement
             *acc.entry(node.item).or_default() += node.crafters_needed;
-            
+
             // Recursively collect from all dependencies
             for dep in &node.dependencies {
                 collect_requirements(dep, acc);
             }
         }
-        
+
+        // Flatten the tree into a HashMap, aggregating duplicate items
+        let mut items = HashMap::new();
         collect_requirements(&pretty_tree, &mut items);
-        
+
         // Convert HashMap back to Vec
         items.into_iter().collect()
     }
 
     /// Get requirements tree with preserved hierarchy
     /// Returns a tree structure showing dependencies between crafters
-    fn get_requirements_tree_pretty(&self) -> RequirementNode {
+    fn get_requirements_tree(&self) -> RequirementNode {
         let dependencies = self
             .inputs
             .iter()
@@ -123,7 +122,7 @@ impl Recipe {
                 let crafters_needed = count_per_second / recipe.items_per_second();
 
                 // Recursively get the tree for this dependency
-                let mut node = recipe.get_requirements_tree_pretty();
+                let mut node = recipe.get_requirements_tree();
                 node.crafters_needed = crafters_needed;
                 node
             })
@@ -149,13 +148,13 @@ fn main() {
     RECIPES.iter().for_each(|r| {
         println!("Item: {:?}", r.out.0);
         println!("Raw materials: {:?}", r.get_raw_mats());
-        let tree = r.get_requirements_tree();
+        let tree = r.get_required_crafters();
         println!("Crafting ratios:");
         tree.iter().for_each(|(item, ratio)| {
             println!("\t{ratio:.3}x\t{item:?}");
         });
         println!("Pretty tree:");
-        let pretty_tree = r.get_requirements_tree_pretty();
+        let pretty_tree = r.get_requirements_tree();
         print_tree(&pretty_tree, 0);
         println!("================================================");
     });
