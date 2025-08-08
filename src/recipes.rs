@@ -200,5 +200,40 @@ pub static RECIPES: LazyLock<Vec<Recipe>> = LazyLock::new(|| {
             inputs: vec![(Iron, 1), (Brick, 5), (Water, 100)],
             craft_time: 10.,
         },
+        Recipe {
+            out: (LowDensityStructure, 1),
+            inputs: vec![(CopperPlate, 20), (Steel, 2), (Plastic, 5)],
+            craft_time: 15.,
+        },
+        Recipe {
+            out: (ElectricEngine, 1),
+            inputs: vec![(R1Circuit, 2), (Engine, 1), (Lubricant, 15)],
+            craft_time: 10.,
+        },
+        Recipe {
+            out: (FlyingRobotFrame, 1),
+            inputs: vec![(R1Circuit, 3), (ElectricEngine, 1), (Battery, 2), (Steel, 1)],
+            craft_time: 20.,
+        },
+        Recipe {
+            out: (ProcessingUnit, 1),
+            inputs: vec![(R1Circuit, 20), (R2Circuit, 2), (SulfuricAcid, 5) ],
+            craft_time: 10.,
+        },
+        Recipe {
+            out: (UtilityScience, 3),
+            inputs: vec![(ProcessingUnit, 2), (FlyingRobotFrame, 1), (LowDensityStructure, 3) ],
+            craft_time: 21.,
+        },
+        Recipe {
+            out: (Lubricant, 10),
+            inputs: vec![(HeavyOil, 10)],
+            craft_time: 1.,
+        },
+        Recipe {
+            out: (HeavyOil, 25),
+            inputs: vec![(Water, 50), (CrudeOil, 100)],
+            craft_time: 5.,
+        },
     ]
 });

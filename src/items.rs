@@ -19,6 +19,8 @@ pub enum Item {
     Petroleum,
     Plastic,
     SulfuricAcid,
+    HeavyOil,
+    Lubricant,
 
     // Components
     Cog,
@@ -31,6 +33,10 @@ pub enum Item {
     R2Circuit,
     IronStick,
     Battery,
+    LowDensityStructure,
+    FlyingRobotFrame,
+    ProcessingUnit,
+    ElectricEngine,
 
     // Military
     Ammo,
@@ -52,4 +58,5 @@ pub enum Item {
     ChemScience,
     ProdScience,
     MilScience,
+    UtilityScience,
 }
