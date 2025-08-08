@@ -14,6 +14,10 @@ struct Args {
     /// Item name to analyze (if not provided, analyzes all items)
     #[arg(short, long)]
     item: Option<String>,
+    
+    /// Number of crafters to build (scales all dependencies)
+    #[arg(short, long, default_value = "1")]
+    count: f32,
 }
 
 #[derive(Debug)]
@@ -175,25 +179,34 @@ fn print_tree(node: &RequirementNode, indent: usize, is_last: bool, prefix: Stri
     }
 }
 
-fn print_recipe_details(recipe: &Recipe) {
-    println!("Item: {:?}", recipe.out.0);
+fn print_recipe_details(recipe: &Recipe, count: f32) {
+    println!("Item: {:?} ({}x crafters)", recipe.out.0, count);
 
     println!("Raw materials:");
     recipe.get_raw_mats().iter().for_each(|(item, amount)| {
-        println!("   {amount:.3}x\t{item:?}");
+        println!("   {:.3}x\t{item:?}", amount * count);
     });
     println!();
 
     println!("Crafting tree:");
-    let pretty_tree = recipe.get_requirements_tree();
+    let mut pretty_tree = recipe.get_requirements_tree();
+    pretty_tree.crafters_needed *= count;
+    scale_tree(&mut pretty_tree, count);
     print_tree(&pretty_tree, 0, true, String::new());
     println!();
 
     let tree = recipe.get_required_crafters();
     println!("Total Crafters:");
     tree.iter().for_each(|(item, ratio)| {
-        println!("   {ratio:.3}x\t{item:?}");
+        println!("   {:.3}x\t{item:?}", ratio * count);
     });
+}
+
+fn scale_tree(node: &mut RequirementNode, scale: f32) {
+    for dep in &mut node.dependencies {
+        dep.crafters_needed *= scale;
+        scale_tree(dep, scale);
+    }
 }
 
 fn main() {
@@ -206,7 +219,7 @@ fn main() {
                 .to_lowercase()
                 .starts_with(item_name.to_lowercase().as_str())
         }) {
-            print_recipe_details(recipe);
+            print_recipe_details(recipe, args.count);
         } else {
             eprintln!("Item '{}' not found!", item_name);
             eprintln!("Available items:");
@@ -218,7 +231,7 @@ fn main() {
     } else {
         // Print all recipes
         RECIPES.iter().for_each(|recipe| {
-            print_recipe_details(recipe);
+            print_recipe_details(recipe, args.count);
             println!("================================================");
         });
     }
