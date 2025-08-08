@@ -145,16 +145,19 @@ fn print_tree(node: &RequirementNode, indent: usize, is_last: bool, prefix: Stri
     } else {
         "├─ "
     };
-    
-    println!("{}{}{:.3}x {:?}", prefix, connector, node.crafters_needed, node.item);
-    
+
+    println!(
+        "{}{}{:.3}x {:?}",
+        prefix, connector, node.crafters_needed, node.item
+    );
+
     // Prepare prefix for children
     let child_prefix = if indent == 0 {
         String::new()
     } else {
         format!("{}{}   ", prefix, if is_last { " " } else { "│" })
     };
-    
+
     // Print all dependencies
     for (i, dep) in node.dependencies.iter().enumerate() {
         let is_last_child = i == node.dependencies.len() - 1;
@@ -165,15 +168,24 @@ fn print_tree(node: &RequirementNode, indent: usize, is_last: bool, prefix: Stri
 fn main() {
     RECIPES.iter().for_each(|r| {
         println!("Item: {:?}", r.out.0);
-        println!("Raw materials: {:?}", r.get_raw_mats());
-        let tree = r.get_required_crafters();
-        println!("Crafting ratios:");
-        tree.iter().for_each(|(item, ratio)| {
-            println!("\t{ratio:.3}x\t{item:?}");
+
+        println!("Raw materials:");
+        r.get_raw_mats().iter().for_each(|(item, amount)| {
+            println!("   {amount:.3}x\t{item:?}");
         });
-        println!("Pretty tree:");
+        println!();
+
+        println!("Crafting tree:");
         let pretty_tree = r.get_requirements_tree();
         print_tree(&pretty_tree, 0, true, String::new());
+        println!();
+
+        let tree = r.get_required_crafters();
+        println!("Total Crafters:");
+        tree.iter().for_each(|(item, ratio)| {
+            println!("   {ratio:.3}x\t{item:?}");
+        });
+
         println!("================================================");
     });
 }
