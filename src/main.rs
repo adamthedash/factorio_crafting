@@ -127,32 +127,34 @@ impl Recipe {
     /// Get requirements tree with preserved hierarchy
     /// Returns a tree structure showing dependencies between crafters
     fn get_requirements_tree_pretty(&self) -> RequirementNode {
+        let dependencies = self
+            .inputs
+            .iter()
+            .copied()
+            .map(|(item, count_per_craft)| {
+                // Calculate how many of this input item we consume per second
+                let count_per_second = self.crafts_per_second() * count_per_craft as f32;
+
+                // Find the recipe that produces this input item
+                let recipe = RECIPES
+                    .iter()
+                    .find(|r| r.out.0 == item)
+                    .expect("Recipe not found");
+
+                // Calculate how many crafters we need for this dependency
+                let crafters_needed = count_per_second / recipe.items_per_second();
+
+                // Recursively get the tree for this dependency
+                let mut node = recipe.get_requirements_tree_pretty();
+                node.crafters_needed = crafters_needed;
+                node
+            })
+            .collect();
+
         RequirementNode {
             item: self.out.0,
             crafters_needed: 1.0,
-            dependencies: self
-                .inputs
-                .iter()
-                .copied()
-                .map(|(item, count_per_craft)| {
-                    // Calculate how many of this input item we consume per second
-                    let count_per_second = self.crafts_per_second() * count_per_craft as f32;
-                    
-                    // Find the recipe that produces this input item
-                    let recipe = RECIPES
-                        .iter()
-                        .find(|r| r.out.0 == item)
-                        .expect("Recipe not found");
-                    
-                    // Calculate how many crafters we need for this dependency
-                    let crafters_needed = count_per_second / recipe.items_per_second();
-                    
-                    // Recursively get the tree for this dependency
-                    let mut node = recipe.get_requirements_tree_pretty();
-                    node.crafters_needed = crafters_needed;
-                    node
-                })
-                .collect(),
+            dependencies,
         }
     }
 }
