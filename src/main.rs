@@ -79,49 +79,27 @@ impl Recipe {
     /// Get combined crafting recipes to make this item
     /// Returned value is how many crafts of the sub-components per one of these to keep up
     fn get_requirements_tree(&self) -> Vec<(Item, f32)> {
-        // I consume Xi number of items per craft
-        // I craft Y crafts per second
-        // I produde Z items per craft
-        // To craft at full throttle, I need Y*Xi items per second
-        // I produce Y*Z items per second
-        // To craft at full throttle, I need (Y*Xi) / (Yi*Zi) crafters for item i
-
-        // Process each input item to calculate crafter requirements
-        let items = self
-            .inputs
-            .iter()
-            .copied()
-            // For each input item, calculate how many crafters we need
-            .flat_map(|(item, count_per_craft)| {
-                // Calculate how many of this input item we consume per second (Y*Xi)
-                let count_per_second = self.crafts_per_second() * count_per_craft as f32;
-
-                // Find the recipe that produces this input item
-                let recipe = RECIPES
-                    .iter()
-                    .find(|r| r.out.0 == item)
-                    .expect("Recipe not found");
-
-                // Calculate how many crafters we need: consumption rate / production rate
-                let crafters_needed = count_per_second / recipe.items_per_second();
-
-                // Recursively get the requirements for this input item's recipe
-                recipe
-                    .get_requirements_tree()
-                    .into_iter()
-                    // Scale the sub-requirements by how many crafters we need
-                    .map(|(item, count)| (item, count * crafters_needed))
-                    .collect::<Vec<_>>()
-            })
-            // Combine all requirements, summing up duplicate items
-            .fold(HashMap::new(), |mut acc, (item, count)| {
-                *acc.entry(item).or_default() += count;
-
-                acc
-            });
-
-        // Return this recipe (1 crafter) plus all sub-requirements
-        std::iter::once((self.out.0, 1.)).chain(items).collect()
+        // Get the hierarchical tree first
+        let pretty_tree = self.get_requirements_tree_pretty();
+        
+        // Flatten the tree into a HashMap, aggregating duplicate items
+        let mut items = HashMap::new();
+        
+        // Recursive function to traverse the tree and collect all requirements
+        fn collect_requirements(node: &RequirementNode, acc: &mut HashMap<Item, f32>) {
+            // Add this node's requirement
+            *acc.entry(node.item).or_default() += node.crafters_needed;
+            
+            // Recursively collect from all dependencies
+            for dep in &node.dependencies {
+                collect_requirements(dep, acc);
+            }
+        }
+        
+        collect_requirements(&pretty_tree, &mut items);
+        
+        // Convert HashMap back to Vec
+        items.into_iter().collect()
     }
 
     /// Get requirements tree with preserved hierarchy
