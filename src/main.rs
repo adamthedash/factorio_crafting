@@ -6,6 +6,13 @@ use std::collections::HashMap;
 
 use crate::items::Item;
 
+#[derive(Debug)]
+pub struct RequirementNode {
+    pub item: Item,
+    pub crafters_needed: f32,
+    pub dependencies: Vec<RequirementNode>,
+}
+
 pub struct Recipe {
     out: (Item, usize),
     inputs: Vec<(Item, usize)>,
@@ -116,6 +123,46 @@ impl Recipe {
         // Return this recipe (1 crafter) plus all sub-requirements
         std::iter::once((self.out.0, 1.)).chain(items).collect()
     }
+
+    /// Get requirements tree with preserved hierarchy
+    /// Returns a tree structure showing dependencies between crafters
+    fn get_requirements_tree_pretty(&self) -> RequirementNode {
+        RequirementNode {
+            item: self.out.0,
+            crafters_needed: 1.0,
+            dependencies: self
+                .inputs
+                .iter()
+                .copied()
+                .map(|(item, count_per_craft)| {
+                    // Calculate how many of this input item we consume per second
+                    let count_per_second = self.crafts_per_second() * count_per_craft as f32;
+                    
+                    // Find the recipe that produces this input item
+                    let recipe = RECIPES
+                        .iter()
+                        .find(|r| r.out.0 == item)
+                        .expect("Recipe not found");
+                    
+                    // Calculate how many crafters we need for this dependency
+                    let crafters_needed = count_per_second / recipe.items_per_second();
+                    
+                    // Recursively get the tree for this dependency
+                    let mut node = recipe.get_requirements_tree_pretty();
+                    node.crafters_needed = crafters_needed;
+                    node
+                })
+                .collect(),
+        }
+    }
+}
+
+fn print_tree(node: &RequirementNode, indent: usize) {
+    let prefix = "  ".repeat(indent);
+    println!("{}{:.3}x {:?}", prefix, node.crafters_needed, node.item);
+    for dep in &node.dependencies {
+        print_tree(dep, indent + 1);
+    }
 }
 
 fn main() {
@@ -127,6 +174,9 @@ fn main() {
         tree.iter().for_each(|(item, ratio)| {
             println!("\t{ratio:.3}x\t{item:?}");
         });
+        println!("Pretty tree:");
+        let pretty_tree = r.get_requirements_tree_pretty();
+        print_tree(&pretty_tree, 0);
         println!("================================================");
     });
 }
