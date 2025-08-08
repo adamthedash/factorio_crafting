@@ -4,7 +4,7 @@ use crate::{Recipe, items::Item};
 
 pub static RECIPES: LazyLock<Vec<Recipe>> = LazyLock::new(|| {
     use Item::*;
-    vec![
+    let mut recipes = vec![
         Recipe {
             out: (Cog, 1),
             inputs: vec![(IronPlate, 2)],
@@ -212,17 +212,26 @@ pub static RECIPES: LazyLock<Vec<Recipe>> = LazyLock::new(|| {
         },
         Recipe {
             out: (FlyingRobotFrame, 1),
-            inputs: vec![(R1Circuit, 3), (ElectricEngine, 1), (Battery, 2), (Steel, 1)],
+            inputs: vec![
+                (R1Circuit, 3),
+                (ElectricEngine, 1),
+                (Battery, 2),
+                (Steel, 1),
+            ],
             craft_time: 20.,
         },
         Recipe {
             out: (ProcessingUnit, 1),
-            inputs: vec![(R1Circuit, 20), (R2Circuit, 2), (SulfuricAcid, 5) ],
+            inputs: vec![(R1Circuit, 20), (R2Circuit, 2), (SulfuricAcid, 5)],
             craft_time: 10.,
         },
         Recipe {
             out: (UtilityScience, 3),
-            inputs: vec![(ProcessingUnit, 2), (FlyingRobotFrame, 1), (LowDensityStructure, 3) ],
+            inputs: vec![
+                (ProcessingUnit, 2),
+                (FlyingRobotFrame, 1),
+                (LowDensityStructure, 3),
+            ],
             craft_time: 21.,
         },
         Recipe {
@@ -235,5 +244,9 @@ pub static RECIPES: LazyLock<Vec<Recipe>> = LazyLock::new(|| {
             inputs: vec![(Water, 50), (CrudeOil, 100)],
             craft_time: 5.,
         },
-    ]
+    ];
+
+    recipes.sort_unstable_by_key(|r| format!("{:?}", r.out.0));
+
+    recipes
 });

@@ -14,9 +14,9 @@ struct Args {
     /// Item name to analyze (if not provided, analyzes all items)
     #[arg(short, long)]
     item: Option<String>,
-    
+
     /// Number of crafters to build (scales all dependencies)
-    #[arg(short, long, default_value = "1")]
+    #[arg(short = 'n', long, default_value = "1")]
     count: f32,
 }
 
