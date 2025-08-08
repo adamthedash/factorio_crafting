@@ -2,8 +2,8 @@ pub mod items;
 pub mod recipes;
 
 use crate::recipes::RECIPES;
-use std::collections::HashMap;
 use clap::Parser;
+use std::collections::HashMap;
 
 use crate::items::Item;
 
@@ -194,8 +194,6 @@ fn print_recipe_details(recipe: &Recipe) {
     tree.iter().for_each(|(item, ratio)| {
         println!("   {ratio:.3}x\t{item:?}");
     });
-
-    println!("================================================");
 }
 
 fn main() {
@@ -204,7 +202,9 @@ fn main() {
     if let Some(item_name) = args.item {
         // Find the specific recipe
         if let Some(recipe) = RECIPES.iter().find(|r| {
-            format!("{:?}", r.out.0).to_lowercase() == item_name.to_lowercase()
+            format!("{:?}", r.out.0)
+                .to_lowercase()
+                .starts_with(item_name.to_lowercase().as_str())
         }) {
             print_recipe_details(recipe);
         } else {
@@ -217,6 +217,9 @@ fn main() {
         }
     } else {
         // Print all recipes
-        RECIPES.iter().for_each(print_recipe_details);
+        RECIPES.iter().for_each(|recipe| {
+            print_recipe_details(recipe);
+            println!("================================================");
+        });
     }
 }
