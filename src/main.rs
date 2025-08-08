@@ -136,11 +136,29 @@ impl Recipe {
     }
 }
 
-fn print_tree(node: &RequirementNode, indent: usize) {
-    let prefix = "  ".repeat(indent);
-    println!("{}{:.3}x {:?}", prefix, node.crafters_needed, node.item);
-    for dep in &node.dependencies {
-        print_tree(dep, indent + 1);
+fn print_tree(node: &RequirementNode, indent: usize, is_last: bool, prefix: String) {
+    // Print the current node with appropriate tree characters
+    let connector = if indent == 0 {
+        ""
+    } else if is_last {
+        "└─ "
+    } else {
+        "├─ "
+    };
+    
+    println!("{}{}{:.3}x {:?}", prefix, connector, node.crafters_needed, node.item);
+    
+    // Prepare prefix for children
+    let child_prefix = if indent == 0 {
+        String::new()
+    } else {
+        format!("{}{}   ", prefix, if is_last { " " } else { "│" })
+    };
+    
+    // Print all dependencies
+    for (i, dep) in node.dependencies.iter().enumerate() {
+        let is_last_child = i == node.dependencies.len() - 1;
+        print_tree(dep, indent + 1, is_last_child, child_prefix.clone());
     }
 }
 
@@ -155,7 +173,7 @@ fn main() {
         });
         println!("Pretty tree:");
         let pretty_tree = r.get_requirements_tree();
-        print_tree(&pretty_tree, 0);
+        print_tree(&pretty_tree, 0, true, String::new());
         println!("================================================");
     });
 }
