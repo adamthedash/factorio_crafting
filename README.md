@@ -34,23 +34,26 @@ cargo run -- -i copper -n 2.5
 ## Example Output
 
 ```
-Item: Steel (5x crafters)
-
+Item: R1Circuit (4x crafters)
 Raw materials:
-   25.000x	Iron
-   25.000x	Coal
+   6.000x       Copper
+   4.000x       Iron
 
 Crafting tree:
-5.000x Steel
-├─ 25.000x IronPlate
-│  └─ 25.000x Iron
-└─ 25.000x Coal
+4.000x R1Circuit
+├─ 6.000x CopperWire
+│   └─ 25.600x CopperPlate
+│       └─ 2.500x Copper
+└─ 25.600x IronPlate
+    └─ 2.500x Iron
 
 Total Crafters:
-   5.000x	Steel
-   25.000x	IronPlate
-   25.000x	Iron
-   25.000x	Coal
+   25.600x      IronPlate
+   2.500x       Iron
+   6.000x       CopperWire
+   4.000x       R1Circuit
+   25.600x      CopperPlate
+   2.500x       Copper
 ```
 
 ## What It Shows
