@@ -3,8 +3,18 @@ pub mod recipes;
 
 use crate::recipes::RECIPES;
 use std::collections::HashMap;
+use clap::Parser;
 
 use crate::items::Item;
+
+#[derive(Parser)]
+#[command(name = "recipe-analyzer")]
+#[command(about = "Analyze crafting recipes and their dependencies")]
+struct Args {
+    /// Item name to analyze (if not provided, analyzes all items)
+    #[arg(short, long)]
+    item: Option<String>,
+}
 
 #[derive(Debug)]
 pub struct RequirementNode {
@@ -165,27 +175,48 @@ fn print_tree(node: &RequirementNode, indent: usize, is_last: bool, prefix: Stri
     }
 }
 
-fn main() {
-    RECIPES.iter().for_each(|r| {
-        println!("Item: {:?}", r.out.0);
+fn print_recipe_details(recipe: &Recipe) {
+    println!("Item: {:?}", recipe.out.0);
 
-        println!("Raw materials:");
-        r.get_raw_mats().iter().for_each(|(item, amount)| {
-            println!("   {amount:.3}x\t{item:?}");
-        });
-        println!();
-
-        println!("Crafting tree:");
-        let pretty_tree = r.get_requirements_tree();
-        print_tree(&pretty_tree, 0, true, String::new());
-        println!();
-
-        let tree = r.get_required_crafters();
-        println!("Total Crafters:");
-        tree.iter().for_each(|(item, ratio)| {
-            println!("   {ratio:.3}x\t{item:?}");
-        });
-
-        println!("================================================");
+    println!("Raw materials:");
+    recipe.get_raw_mats().iter().for_each(|(item, amount)| {
+        println!("   {amount:.3}x\t{item:?}");
     });
+    println!();
+
+    println!("Crafting tree:");
+    let pretty_tree = recipe.get_requirements_tree();
+    print_tree(&pretty_tree, 0, true, String::new());
+    println!();
+
+    let tree = recipe.get_required_crafters();
+    println!("Total Crafters:");
+    tree.iter().for_each(|(item, ratio)| {
+        println!("   {ratio:.3}x\t{item:?}");
+    });
+
+    println!("================================================");
+}
+
+fn main() {
+    let args = Args::parse();
+
+    if let Some(item_name) = args.item {
+        // Find the specific recipe
+        if let Some(recipe) = RECIPES.iter().find(|r| {
+            format!("{:?}", r.out.0).to_lowercase() == item_name.to_lowercase()
+        }) {
+            print_recipe_details(recipe);
+        } else {
+            eprintln!("Item '{}' not found!", item_name);
+            eprintln!("Available items:");
+            RECIPES.iter().for_each(|r| {
+                eprintln!("  {:?}", r.out.0);
+            });
+            std::process::exit(1);
+        }
+    } else {
+        // Print all recipes
+        RECIPES.iter().for_each(print_recipe_details);
+    }
 }
